@@ -1,0 +1,152 @@
+Match: 
+
+-- Table: public.match
+
+-- DROP TABLE public.match;
+
+CREATE TABLE public.match
+(
+    "Match_Id" integer,
+    "Match_Date" date,
+    "Team_Name_Id" integer,
+    "Opponent_Team_Id" integer,
+    "Season_Id" integer,
+    "Venue_Name" text COLLATE pg_catalog."default",
+    "Toss_Winner_Id" integer
+    "Toss_Decision" text COLLATE pg_catalog."default",
+    "IS_Superover" integer,
+    "IS_Result" integer,
+    "Is_DuckWorthLewis" integer,
+    "Win_Type" text COLLATE pg_catalog."default",
+    "Won_By" integer,
+    "Match_Winner_Id" integer,
+    "Man_Of_The_Match_Id" integer,
+    "City_Name" text COLLATE pg_catalog."default",
+    "Host_Country" text COLLATE pg_catalog."default"
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+ALTER TABLE public.match
+    OWNER to postgres;
+
+
+
+-- Table: public.match_player
+
+-- DROP TABLE public.match_player;
+
+CREATE TABLE public.match_player
+(
+    match_id integer NOT NULL,
+    player_id integer NOT NULL,
+    team_id integer NOT NULL,
+    is_keeper integer NOT NULL,
+    is_captain integer NOT NULL
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+ALTER TABLE public.match_player
+    OWNER to postgres;
+
+
+-- Table: public.player
+
+-- DROP TABLE public.player;
+
+CREATE TABLE public.player
+(
+    "Player_Id" integer,
+    "Player_Name" text COLLATE pg_catalog."default",
+    "Batting_Hand" text COLLATE pg_catalog."default",
+    "Bowling_Skill" text COLLATE pg_catalog."default",
+    "Country" text COLLATE pg_catalog."default"
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+ALTER TABLE public.player
+    OWNER to postgres;
+
+
+
+-- Table: public.season
+
+-- DROP TABLE public.season;
+
+CREATE TABLE public.season
+(
+    "Season_Id" integer,
+    "Season_Year" integer,
+    "Orange_Cap" integer,
+    "Purple_Cap" integer,
+    "Man_of_the_Series" integer
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+ALTER TABLE public.season
+    OWNER to postgres;
+
+
+
+-- Table: public.team
+
+-- DROP TABLE public.team;
+
+CREATE TABLE public.team
+(
+    "Team_Id" integer,
+    "Team_Name" text COLLATE pg_catalog."default",
+    "Team_Short_Code" text COLLATE pg_catalog."default"
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+ALTER TABLE public.team
+    OWNER to postgres;
+
+
+
+CREATE TABLE "BallbyBall"
+(
+  "Match_Id" integer,
+  "Innings_Id" integer,
+  "Over_Id" integer,
+  "Ball_Id" integer,
+  "Team_Batting_Id" integer,
+  "Team_Bowling_Id" integer,
+  "Striker_Id" integer,
+  "Striker_Batting_Position" integer,
+  "Non_Striker_Id" integer,
+  "Bowler_Id" integer,
+  "Batsman_Scored" integer,
+  "Extra_Type" text,
+  "Extra_Runs" integer,
+  "Player_Dismissal_Id" text,
+  "Dismissal_Type" text,
+  "Fielder_Id" text
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE "BallbyBall"
+  OWNER TO postgres;
+
+
+
+Query to import CSV data:
+
+COPY match 
+FROM 'C:\tmp\match.csv' DELIMITER ',' CSV HEADER;
