@@ -51,5 +51,24 @@ def match_data():
     conn.close()
     return records
 
+@app.route("/iplviz/player")
+def player_data():
+    print "Connecting to database\n ->%s" % (conn_string)
+    conn = psycopg2.connect(conn_string)
+    cursor = conn.cursor()
+    cursor.execute('''SELECT distinct "Player_Name","Dismissal_Type",count("Dismissal_Type") from "player","ball_by_ball" where "Dismissal_Type" not in (' ','run out') and "Bowler_Id"="player"."Player_Id" and "Player_Name"='SK Warne' group by "Player_Name","Dismissal_Type"''')
+    playername = cursor.fetchall()
+    bowlerStatistics = []
+    for i in playername:
+        x = {}
+        x['Player_Name'] = i[0]
+        x['Dismissal_Type'] = i[1]
+        x['Count'] = int(i[2])
+        bowlerStatistics.append(x)
+    cursor.close()
+    conn.close()
+    return json.dumps(bowlerStatistics)
+    
+    
 if __name__ == "__main__":
     app.run(host="localhost", port=5000, debug=True)
