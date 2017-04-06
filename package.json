@@ -4,15 +4,20 @@
   "private": true,
   "dependencies": {
     "react": "^15.4.2",
-    "react-dom": "^15.4.2"
-  },
-  "devDependencies": {
-    "react-scripts": "0.9.5",
-    "crossfilter": "*",
-    "bootstrap": "*",
+    "react-dom": "^15.4.2",
+    "axios": "^0.14.0",
     "highcharts": "*",
     "d3": "*",
-    "dc": "*"
+    "dc": "*",
+    "moment": "^2.18.1",
+    "mongoose": "^4.6.0",
+    "nodemon": "^1.10.2",
+    "normalize.css": "^6.0.0",
+    "react-bootstrap": "^0.30.8",
+    "react-highcharts": "^11.5.0"
+  },
+  "devDependencies": {
+    "react-scripts": "0.9.5"
   },
   "scripts": {
     "start": "react-scripts start",
