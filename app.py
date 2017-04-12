@@ -80,6 +80,7 @@ def player_data():
     conn.close()
     return json.dumps(bowlerStatistics)
 
+
 @app.route("/iplviz/player/playerwicket")
 def playerwicket_data():
     print "Connecting to database\n ->%s" % (conn_string)
@@ -102,6 +103,30 @@ def playerwicket_data():
 
 ########################### Season endpoints starts here############################
 #####Author:KANNAN GANESAN
+@app.route("/iplviz/season/teams")
+def season_teams():
+    print "Connecting to database\n ->%s" % (conn_string)
+    conn = psycopg2.connect(conn_string)
+    cursor = conn.cursor()
+    year = 2008
+    queryStr = 'SELECT "Season_Id" from season where "Season_Year"='+str(year)+''
+    cursor.execute(queryStr)
+    seasons=cursor.fetchall()
+    for i in seasons:
+        seasonid=int(i[0])
+    cursor.execute('SELECT distinct "Team_Id","Team_Name" from (select distinct "Team_Id","Team_Name" from team,match where team."Team_Id"=match."Team_Name_Id" and match."Season_Id"='+str(seasonid)+' union select distinct "Team_Id","Team_Name" from team,match where team."Team_Id"=match."Opponent_Team_Id" and match."Season_Id"='+str(seasonid)+') as temp order by "Team_Id"')
+    result=cursor.fetchall()
+    teams=[]
+    for i in result:
+        x={}
+        x['Team_Id']=int(i[0])
+        x['Season']=year
+        x['Team_Name']=i[1]
+        teams.append(x);
+    cursor.close()
+    conn.close()
+    return json.dumps(teams)
+
 
 @app.route("/iplviz/season/teamwins")
 def season_teamwins():
@@ -114,14 +139,15 @@ def season_teamwins():
     seasons=cursor.fetchall()
     for i in seasons:
         seasonid=int(i[0])
-    cursor.execute('SELECT "Team_Name",count("Match_Winner_Id") from match,team where match."Season_Id"='+str(seasonid)+' and match."Match_Winner_Id"=team."Team_Id" group by "Team_Name"')
+    cursor.execute('SELECT "Team_Id","Team_Name",count("Match_Winner_Id") from match,team where match."Season_Id"='+str(seasonid)+' and match."Match_Winner_Id"=team."Team_Id" group by "Team_Name","Team_Id"')
     result=cursor.fetchall()
     teamwins=[]
     for i in result:
         x={}
-        x['Team_Name']=i[0]
+        x['Team_Id']=i[0]
+        x['Team_Name']=i[1]
         x['Season_Year']=year
-        x['Wins']=int(i[1])
+        x['Wins']=int(i[2])
         teamwins.append(x);
     cursor.close()
     conn.close()
@@ -139,15 +165,16 @@ def points_table():
     for i in seasons:
         seasonid=int(i[0])
     #cursor1 = conn.cursor()
-    cursor.execute('SELECT team."Team_Name",COUNT(match."Match_Winner_Id")*2 as Points,COUNT(match."Match_Winner_Id") as WON FROM match,team WHERE "Season_Id"='+str(seasonid)+' and team."Team_Id" = match."Match_Winner_Id" GROUP BY team."Team_Name"')
+    cursor.execute('SELECT "Team_Id",team."Team_Name",COUNT(match."Match_Winner_Id")*2 as Points,COUNT(match."Match_Winner_Id") as WON FROM match,team WHERE "Season_Id"='+str(seasonid)+' and team."Team_Id" = match."Match_Winner_Id" GROUP BY team."Team_Name","Team_Id"')
     result=cursor.fetchall()
     #result1=cursor1.fetchall()
     pointstable=[]
     for i in result:
         x={}
-        x['Points']=int(i[1])
-        x['Wins']=int(i[2])
-        x['Team_Name']=i[0]
+        x['Team_Id']=int(i[0])
+        x['Points']=int(i[2])
+        x['Wins']=int(i[3])
+        x['Team_Name']=i[1]
         x['Season_Year']=year
         pointstable.append(x);
     cursor.close()
@@ -165,14 +192,15 @@ def season_top3bat():
     seasons=cursor.fetchall()
     for i in seasons:
         seasonid=int(i[0])
-    cursor.execute('SELECT   player."Player_Name",SUM("Batsman_Scored") from ball_by_ball, player where "Season_Id"='+str(seasonid)+' and player."Player_Id" = ball_by_ball."Striker_Id" group by "Striker_Id",player."Player_Name" order by SUM("Batsman_Scored") DESC limit 3')
+    cursor.execute('SELECT  "Player_Id",player."Player_Name",SUM("Batsman_Scored") from ball_by_ball, player where "Season_Id"='+str(seasonid)+' and player."Player_Id" = ball_by_ball."Striker_Id" group by "Player_Id",player."Player_Name" order by SUM("Batsman_Scored") DESC limit 3')
     result=cursor.fetchall()
     topbatsmen=[]
     for i in result:
         x={}
-        x['Player_Name']=i[0]
+        x['Player_Id']=int(i[0])
+        x['Player_Name']=i[1]
         x['Season_Year']=year
-        x['Runs']=int(i[1])
+        x['Runs']=int(i[2])
         topbatsmen.append(x);
     cursor.close()
     conn.close()
@@ -189,14 +217,15 @@ def season_top3bowl():
     seasons=cursor.fetchall()
     for i in seasons:
         seasonid=int(i[0])
-    cursor.execute('SELECT player."Player_Name",COUNT(ball_by_ball."Player_Dismissal_Id") from ball_by_ball, player where "Season_Id"='+str(seasonid)+'and player."Player_Id" = ball_by_ball."Bowler_Id" and ball_by_ball."Dismissal_Type" IN (\'caught\',\'lbw\',\'stumped\',\'bowled\',\'caught and bowled\') group by player."Player_Name" order by count(ball_by_ball."Player_Dismissal_Id") DESC limit 3')
+    cursor.execute('SELECT "Player_Id",player."Player_Name",COUNT(ball_by_ball."Player_Dismissal_Id") from ball_by_ball, player where "Season_Id"='+str(seasonid)+'and player."Player_Id" = ball_by_ball."Bowler_Id" and ball_by_ball."Dismissal_Type" IN (\'caught\',\'lbw\',\'stumped\',\'bowled\',\'caught and bowled\') group by "Player_Id",player."Player_Name" order by count(ball_by_ball."Player_Dismissal_Id") DESC limit 3')
     result=cursor.fetchall()
     topbowlers=[]
     for i in result:
         x={}
-        x['Player_Name']=i[0]
+        x['Player_Id']=int(i[0])
+        x['Player_Name']=i[1]
         x['Season_Year']=year
-        x['Wickets']=int(i[1])
+        x['Wickets']=int(i[2])
         topbowlers.append(x);
     cursor.close()
     conn.close()
@@ -213,14 +242,15 @@ def season_top3keepers():
     seasons=cursor.fetchall()
     for i in seasons:
         seasonid=int(i[0])
-    cursor.execute('SELECT player."Player_Name",COUNT(*) from ball_by_ball, player where ball_by_ball."Season_Id"='+str(seasonid)+' and player."Player_Id"= ball_by_ball."Fielder_Id" and ball_by_ball."Player_Dismissal_Id" not in (\' \') and ball_by_ball."Dismissal_Type" IN (\'caught\',\'stumped\') and player."Player_Id" in (SELECT match_player."player_id" from match_player where is_keeper=1) group by player."Player_Name" order by count(ball_by_ball."Player_Dismissal_Id") DESC limit 3')
+    cursor.execute('SELECT "Player_Id",player."Player_Name",COUNT(*) from ball_by_ball, player where ball_by_ball."Season_Id"='+str(seasonid)+' and player."Player_Id"= ball_by_ball."Fielder_Id" and ball_by_ball."Player_Dismissal_Id" not in (\' \') and ball_by_ball."Dismissal_Type" IN (\'caught\',\'stumped\') and player."Player_Id" in (SELECT match_player."player_id" from match_player where is_keeper=1) group by "Player_Id",player."Player_Name" order by count(ball_by_ball."Player_Dismissal_Id") DESC limit 3')
     result=cursor.fetchall()
     topkeepers=[]
     for i in result:
         x={}
-        x['Player_Name']=i[0]
+        x['Player_Id']=int(i[0])
+        x['Player_Name']=i[1]
         x['Season_Year']=year
-        x['Dismissals']=int(i[1])
+        x['Dismissals']=int(i[2])
         topkeepers.append(x);
     cursor.close()
     conn.close()
@@ -272,6 +302,8 @@ def season_top3partners():
     loop=0
     while loop < len(player1):
         k={}
+        k['Player1_Id']=toppartners[loop]['Player1_Id']
+        k['Player2_Id']=toppartners[loop]['Player2_Id']
         k['Player1_Name']=player1[loop]
         k['Player2_Name']=player2[loop]
         k['Season']=toppartners[loop]['Season_Year']
@@ -294,14 +326,15 @@ def season_teamrunrates():
     seasons=cursor.fetchall()
     for i in seasons:
         seasonid=int(i[0])
-    cursor.execute('SELECT "Team_Name",(CAST(sum("Batsman_Scored")+sum("Extra_Runs") as FLOAT)/CAST(count(*) as FLOAT))*6 as RUNRATE from ball_by_ball,team where "Season_Id"='+str(seasonid)+' and ball_by_ball."Team_Batting_Id"=team."Team_Id" group by "Team_Name"')
+    cursor.execute('SELECT "Team_Id","Team_Name",(CAST(sum("Batsman_Scored")+sum("Extra_Runs") as FLOAT)/CAST(count(*) as FLOAT))*6 as RUNRATE from ball_by_ball,team where "Season_Id"='+str(seasonid)+' and ball_by_ball."Team_Batting_Id"=team."Team_Id" group by "Team_Name","Team_Id"')
     result=cursor.fetchall()
     teamrunrates=[]
     for i in result:
         x={}
-        x['Team_Name']=i[0]
+        x['Team_Id']=int(i[0])
+        x['Team_Name']=i[1]
         x['Season_Year']=year
-        x['Run_Rate']=float(i[1])
+        x['Run_Rate']=float(i[2])
         teamrunrates.append(x);
     cursor.close()
     conn.close()
@@ -318,14 +351,15 @@ def season_teameconomyrates():
     seasons=cursor.fetchall()
     for i in seasons:
         seasonid=int(i[0])
-    cursor.execute('SELECT "Team_Name",(CAST(sum("Batsman_Scored")+sum("Extra_Runs") as FLOAT)/CAST(count(*) as FLOAT))*6 as RUNRATE from ball_by_ball,team where "Season_Id"='+str(seasonid)+' and ball_by_ball."Team_Bowling_Id"=team."Team_Id" group by "Team_Name"')
+    cursor.execute('SELECT "Team_Id","Team_Name",(CAST(sum("Batsman_Scored")+sum("Extra_Runs") as FLOAT)/CAST(count(*) as FLOAT))*6 as RUNRATE from ball_by_ball,team where "Season_Id"='+str(seasonid)+' and ball_by_ball."Team_Bowling_Id"=team."Team_Id" group by "Team_Name","Team_Id"')
     result=cursor.fetchall()
     teameconomyrates=[]
     for i in result:
         x={}
-        x['Team_Name']=i[0]
+        x['Team_Id']=int(i[0])
+        x['Team_Name']=i[1]
         x['Season_Year']=year
-        x['Economy_Rate']=float(i[1])
+        x['Economy_Rate']=float(i[2])
         teameconomyrates.append(x);
     cursor.close()
     conn.close()
@@ -342,14 +376,15 @@ def season_teamslogruns():
     seasons=cursor.fetchall()
     for i in seasons:
         seasonid=int(i[0])
-    cursor.execute('SELECT "Team_Name",sum("Batsman_Scored")+sum("Extra_Runs") from ball_by_ball,team where "Over_Id">=15 and "Over_Id"<=20 and "Season_Id"='+str(seasonid)+' and team."Team_Id"=ball_by_ball."Team_Batting_Id" group by "Team_Name" order by "Team_Name"')
+    cursor.execute('SELECT "Team_Id","Team_Name",sum("Batsman_Scored")+sum("Extra_Runs") from ball_by_ball,team where "Over_Id">=15 and "Over_Id"<=20 and "Season_Id"='+str(seasonid)+' and team."Team_Id"=ball_by_ball."Team_Batting_Id" group by "Team_Name","Team_Id" order by "Team_Name"')
     result=cursor.fetchall()
     teamslogruns=[]
     for i in result:
         x={}
-        x['Team_Name']=i[0]
+        x['Team_Id']=int(i[0])
+        x['Team_Name']=i[1]
         x['Season_Year']=year
-        x['Runs']=int(i[1])
+        x['Runs']=int(i[2])
         teamslogruns.append(x);
     cursor.close()
     conn.close()
@@ -366,28 +401,31 @@ def season_teamboundruns():
     seasons=cursor.fetchall()
     for i in seasons:
         seasonid=int(i[0])
-    cursor.execute('SELECT "Team_Name",sum("Batsman_Scored")+sum("Extra_Runs") from ball_by_ball,team where "Season_Id"='+str(seasonid)+' and ball_by_ball."Team_Batting_Id"=team."Team_Id" group by "Team_Name"')
+    cursor.execute('SELECT "Team_Id","Team_Name",sum("Batsman_Scored")+sum("Extra_Runs") from ball_by_ball,team where "Season_Id"='+str(seasonid)+' and ball_by_ball."Team_Batting_Id"=team."Team_Id" group by "Team_Name","Team_Id"')
     result=cursor.fetchall()
     totalruns=[]
     for i in result:
         x={}
-        x['Team_Name']=i[0]
+        x['Team_Id']=int(i[0])
+        x['Team_Name']=i[1]
         x['Season_Year']=year
-        x['Runs']=int(i[1])
+        x['Runs']=int(i[2])
         totalruns.append(x);
-    cursor.execute('select "Team_Name",sum("Batsman_Scored")+sum("Extra_Runs") from ball_by_ball,team where "Season_Id"='+str(seasonid)+'  and ("Batsman_Scored" in(4,6) or "Extra_Runs" in(4,6)) and ball_by_ball."Team_Batting_Id"=team."Team_Id" group by "Team_Name"')
+    cursor.execute('select "Team_Id","Team_Name",sum("Batsman_Scored")+sum("Extra_Runs") from ball_by_ball,team where "Season_Id"='+str(seasonid)+'  and ("Batsman_Scored" in(4,6) or "Extra_Runs" in(4,6)) and ball_by_ball."Team_Batting_Id"=team."Team_Id" group by "Team_Name","Team_Id"')
     result=cursor.fetchall()
     boundruns=[]
     for i in result:
         x={}
-        x['Team_Name']=i[0]
+        x['Team_Id']=int(i[0])
+        x['Team_Name']=i[1]
         x['Season_Year']=year
-        x['Runs']=int(i[1])
+        x['Runs']=int(i[2])
         boundruns.append(x);
     finallist=[]
     loop=0
     while loop < len(boundruns):
         k={}
+        k['Team_Id']=totalruns[loop]['Team_Id']
         k['Team_Name']=totalruns[loop]['Team_Name']
         k['Season']=year
         k['Total_Runs']=totalruns[loop]['Runs']
@@ -410,14 +448,15 @@ def season_teamslogrunrates():
     seasons=cursor.fetchall()
     for i in seasons:
         seasonid=int(i[0])
-    cursor.execute('SELECT "Team_Name",(CAST(sum("Batsman_Scored")+sum("Extra_Runs") as FLOAT)/CAST(count(*) as FLOAT))*6 as RUNRATE from ball_by_ball,team where "Season_Id"='+str(seasonid)+' and team."Team_Id"=ball_by_ball."Team_Batting_Id" and "Over_Id">=15 and "Over_Id"<=20 group by "Team_Name"')
+    cursor.execute('SELECT "Team_Id","Team_Name",(CAST(sum("Batsman_Scored")+sum("Extra_Runs") as FLOAT)/CAST(count(*) as FLOAT))*6 as RUNRATE from ball_by_ball,team where "Season_Id"='+str(seasonid)+' and team."Team_Id"=ball_by_ball."Team_Batting_Id" and "Over_Id">=15 and "Over_Id"<=20 group by "Team_Name","Team_Id"')
     result=cursor.fetchall()
     teamslogrunrates=[]
     for i in result:
         x={}
-        x['Team_Name']=i[0]
+        x['Team_Id']=int(i[0])
+        x['Team_Name']=i[1]
         x['Season_Year']=year
-        x['Run_Rate']=float(i[1])
+        x['Run_Rate']=float(i[2])
         teamslogrunrates.append(x);
     cursor.close()
     conn.close()
@@ -434,14 +473,15 @@ def season_teamslogeconrates():
     seasons=cursor.fetchall()
     for i in seasons:
         seasonid=int(i[0])
-    cursor.execute('SELECT "Team_Name",(CAST(sum("Batsman_Scored")+sum("Extra_Runs") as FLOAT)/CAST(count(*) as FLOAT))*6 as ECONOMY from ball_by_ball,team where "Season_Id"='+str(seasonid)+' and team."Team_Id"=ball_by_ball."Team_Bowling_Id" and "Over_Id">=15 and "Over_Id"<=20 group by "Team_Name"')
+    cursor.execute('SELECT "Team_Id","Team_Name",(CAST(sum("Batsman_Scored")+sum("Extra_Runs") as FLOAT)/CAST(count(*) as FLOAT))*6 as ECONOMY from ball_by_ball,team where "Season_Id"='+str(seasonid)+' and team."Team_Id"=ball_by_ball."Team_Bowling_Id" and "Over_Id">=15 and "Over_Id"<=20 group by "Team_Name","Team_Id"')
     result=cursor.fetchall()
     teamslogeconrates=[]
     for i in result:
         x={}
-        x['Team_Name']=i[0]
+        x['Team_Id']=int(i[0])
+        x['Team_Name']=i[1]
         x['Season_Year']=year
-        x['Econ_Rate']=float(i[1])
+        x['Econ_Rate']=float(i[2])
         teamslogeconrates.append(x);
     cursor.close()
     conn.close()
