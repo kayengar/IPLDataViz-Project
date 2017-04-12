@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import ReactHighcharts from 'react-highcharts';
+import Reactbootstrap from 'react-bootstrap';
+import './Runrateviz.css'
 import axios from 'axios'; 
 
 const URLExt = 'match'
 
-class App extends Component {
+class RunrateViz extends Component {
   constructor(props) {
       super(props);
       this.state = {
@@ -15,7 +17,6 @@ class App extends Component {
 
   componentWillMount() {
       this.loadGraphData(URLExt);
-      console.log('in')
   }
 
   loadGraphData(url) {
@@ -29,6 +30,7 @@ class App extends Component {
   parseGraphData(res) {
       let innings1 = []
       let innings2 = []
+     
       res['Innings1'].forEach(function(val){
           innings1.push(val.Runs)
       })
@@ -43,6 +45,8 @@ class App extends Component {
 
   renderGraph() {
     let graphData = this.state.data;
+    let team1 = graphData['Team_One']
+    let team2 = graphData['Team_Two']
     let xAxisScale = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20']
     let result = this.parseGraphData(graphData);
     let config = {
@@ -75,10 +79,10 @@ class App extends Component {
             }
         },
         series: [{
-            name: 'Innings 1',
+            name: team2,
             data: result[1]
         }, {
-            name: 'Innings 2',
+            name: team1,
             data: result[0]
         }]
     }
@@ -97,13 +101,30 @@ class App extends Component {
 
   render() {
     let gData = this.state.data
+    let team1 = gData['Team_One']
+    let team2 = gData['Team_Two']
+    let graphBanner = team2 + ' vs ' + team1
     console.log('In render', gData, Object.keys(gData).length)
     return (
       <div className="runrate_innings">
-        {(Object.keys(gData).length) ? this.renderGraph(): null}
+        <div className="dropdown">
+            <button className="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                KXIP vs CSK
+                <span className="caret"></span>
+            </button>
+            <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">
+                <li><a href="#">KXIP vs CSK</a></li>
+                <li><a href="#">Another action</a></li>
+                <li><a href="#">Something else here</a></li>
+            </ul>
+        </div>
+        <div>
+            <h2>{graphBanner}</h2>
+            {(Object.keys(gData).length) ? this.renderGraph(): null}
+        </div>
       </div>
     );
   }
 }
 
-export default App;
+export default RunrateViz;

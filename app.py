@@ -69,6 +69,21 @@ def player_data():
     conn.close()
     return json.dumps(bowlerStatistics)
     
-    
+@app.route("/iplviz/season")
+def season_data():
+    print "Connecting to database\n ->%s" % (conn_string)
+    conn = psycopg2.connect(conn_string)
+    cursor = conn.cursor()
+    #cursor1 = conn.cursor()
+    cursor.execute('SELECT "Team_Name",count("Match_Winner_Id") from "match","team" where "Season_Id"=1 and "match"."Match_Winner_Id"="team"."Team_Id" group by "Team_Name"')
+    result=cursor.fetchall()
+    #result1=cursor1.fetchall()
+    list2={}
+    list2={"Season":[{'Team_Name':key,'Wins':value} for key,value in result]}
+    records = json.dumps(list2,indent=4)
+    cursor.close()
+    conn.close()
+    return records
+
 if __name__ == "__main__":
     app.run(host="localhost", port=5000, debug=True)
