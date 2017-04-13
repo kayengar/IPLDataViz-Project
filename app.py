@@ -14,7 +14,7 @@ from bson.json_util import dumps
 app = Flask(__name__)
 CORS(app)
 
-conn_string = "host='localhost' dbname='ipldata-dv' user='postgres' password='piyush'"
+conn_string = "host='localhost' dbname='ipldata-dv' user='postgres' password='1234'"
 
 @app.route("/")
 def index():
@@ -270,12 +270,12 @@ def player_radar():
 
 
 
-@app.route("/iplviz/season/teams")
-def season_teams():
+@app.route("/iplviz/season/teams/<id>")
+def season_teams(id):
     print "Connecting to database\n ->%s" % (conn_string)
     conn = psycopg2.connect(conn_string)
     cursor = conn.cursor()
-    year = 2008
+    year = id
     queryStr = 'SELECT "Season_Id" from season where "Season_Year"='+str(year)+''
     cursor.execute(queryStr)
     seasons=cursor.fetchall()

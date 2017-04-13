@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import logo from './Cricketball.png';
 import './App.css';
 import RunrateViz from './RunrateViz'
+import SeasonView from './SeasonView'
 
 const url = 'http://localhost:5000/iplviz'
 
@@ -13,7 +14,8 @@ class App extends Component {
           <img src={logo} className="App-logo" alt="logo" />
           <h2>Indian Premier League Analytics</h2>
         </div>
-        <RunrateViz urlExt={url}/>
+        {/*<RunrateViz urlExt={url}/>*/}
+        <SeasonView urlExt={url}/>
       </div>
     );
   }
