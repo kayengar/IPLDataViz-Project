@@ -1332,5 +1332,63 @@ def team_getteambowlingperformance():
     conn.close()
     return records
 
+@app.route("/iplviz/team/getAllMatchesPlayed")
+def team_getAllMatchesPlayed():
+    #conn_string = "host='localhost' dbname='ipldata-dv' user='postgres' password='piyush'"
+    print "Connecting to database\n ->%s" % (conn_string)
+    conn = psycopg2.connect(conn_string)
+    cursor = conn.cursor()
+    teamName = "Kolkata Knight Riders"
+    cursor.execute('SELECT "Team_Id" from team where "Team_Name"=%s',(teamName,))
+    team = cursor.fetchone()
+    teamId = team[0]
+    year = 2008
+    cursor.execute('select "Season_Id" from season where "Season_Year"=%s', (str(year),))
+    season = cursor.fetchone()
+    seasonId = season[0]
+    cursor.execute('select "Match_Id" , "Team_Name_Id","Opponent_Team_Id" from match where "Match_Id" in (select DISTINCT "match_id" from "match_player" where "Season_Id" = %s and "team_id" = %s)',(str(seasonId),str(teamId)))
+    result = cursor.fetchall()
+    list2 = []
+    for i in result:
+        x={}
+        x['Match_Id']=i[0]
+        x['Team_Id']=int(i[1])
+        x['Opponent_Id'] = int(i[2])
+        list2.append(x)
+    j = 0
+    y = []
+    z = []
+    while j < len(list2):
+        y.append(list2[j]['Team_Id'])
+        z.append(list2[j]['Opponent_Id'])
+        j += 1
+
+    team1 = []
+    for id in y:
+        cursor.execute('select "Team_Name" from team where "Team_Id"=' + str(id) + '')
+        result = cursor.fetchall()
+        for i in result:
+            team1.append(i[0])
+    team2 = []
+    for id in z:
+        cursor.execute('select "Team_Name" from team where "Team_Id"=' + str(id) + '')
+        result = cursor.fetchall()
+        for i in result:
+            team2.append(i[0])
+    finallist = []
+    loop = 0
+    while loop < len(team1):
+        k = {}
+        k['Team_Id'] = list2[loop]['Team_Id']
+        k['Opponent_Id'] = list2[loop]['Opponent_Id']
+        k['Team1_Name'] = team1[loop]
+        k['Team2_Name'] = team2[loop]
+        k['Match_Id'] = list2[loop]['Match_Id']
+        finallist.append(k)
+        loop += 1
+    cursor.close()
+    conn.close()
+    return json.dumps(finallist)
+
 if __name__ == "__main__":
     app.run(host="localhost", port=5000, debug=True)
