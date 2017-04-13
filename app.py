@@ -14,7 +14,7 @@ from bson.json_util import dumps
 app = Flask(__name__)
 CORS(app)
 
-conn_string = "host='localhost' dbname='ipldata-dv' user='postgres'"
+conn_string = "host='localhost' dbname='ipldata-dv' user='postgres' password='piyush'"
 
 @app.route("/")
 def index():
@@ -1226,13 +1226,13 @@ def team_toss():
     cursor.execute('select "Season_Id" from season where "Season_Year"=%s', (str(year),))
     season = cursor.fetchone()
     seasonId = season[0]
-    cursor.execute('SELECT "Team_Name",count(*) as "First_Bat_Win" from "match","team" WHERE "Match_Winner_Id"= "Team_Id" and "Season_Id" =%s AND "Toss_Winner_Id"!=%s and "Toss_Decision"=%s and "Match_Winner_Id"=%s or "Toss_Winner_Id"=%s and "Toss_Decision"=%s and "Match_Winner_Id"=%s group by "Team_Name"',(str(seasonId),str(teamId),"field",str(teamId),str(teamId),"bat",str(teamId)))
-    cursor1.execute('SELECT "Team_Name",count(*) as "First_Bat_Win" from "match","team" WHERE "Match_Winner_Id"= "Team_Id" AND "Season_Id" =%s and "Toss_Winner_Id"!=%s and "Toss_Decision"=%s and "Match_Winner_Id"=%s or "Toss_Winner_Id"=%s and "Toss_Decision"=%s and "Match_Winner_Id"=%s group by "Team_Name"',(str(seasonId),str(teamId),"field",str(teamId),str(teamId),"bat",str(teamId)))
-    result = cursor.fetchall()
-    result1 = cursor1.fetchall()
-    list2 = {}
-    list2 = {"BatWin": [{'Team_Name': key, 'No_Of_Bat_Win': value} for key, value in result],
-             "FieldWin": [{'Team_Name': key, 'No_Of_Field_Win': value} for key, value in result1]}
+    cursor.execute('SELECT count(*) as "First_Bat_Win" from "match" WHERE "Match_Winner_Id"= %s and "Season_Id" =%s AND (("Toss_Winner_Id"!=%s and "Toss_Decision"=%s) or ("Toss_Winner_Id"=%s and "Toss_Decision"=%s))',(str(teamId),str(seasonId),str(teamId),"field",str(teamId),"bat"))
+    cursor1.execute('SELECT count(*) as "First_Bat_Win" from "match" WHERE "Match_Winner_Id"= %s and "Season_Id" =%s AND (("Toss_Winner_Id"!=%s and "Toss_Decision"=%s) or ("Toss_Winner_Id"=%s and "Toss_Decision"=%s))',(str(teamId),str(seasonId),str(teamId),"bat",str(teamId),"field"))
+    result = cursor.fetchone()
+    result1 = cursor1.fetchone()
+    list2 = []
+    list2.append({"BatWin": [{'Team_Name': teamName, 'No_Of_Bat_Win': result[0]}]})
+    list2.append({"BowlWin": [{'Team_Name': teamName, 'No_Of_Bowl_Win': result1[0]}]})
     records = json.dumps(list2, indent=4)
     conn.close()
     return records
@@ -1323,6 +1323,3 @@ def team_getteambowlingperformance():
 
 if __name__ == "__main__":
     app.run(host="localhost", port=5000, debug=True)
-
-
-
