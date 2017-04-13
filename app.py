@@ -266,6 +266,10 @@ def player_radar():
 
 ########################### Season endpoints starts here############################
 #####Author:KANNAN GANESAN
+
+
+
+
 @app.route("/iplviz/season/teams")
 def season_teams():
     print "Connecting to database\n ->%s" % (conn_string)
@@ -321,6 +325,7 @@ def points_table():
     print "Connecting to database\n ->%s" % (conn_string)
     conn = psycopg2.connect(conn_string)
     cursor = conn.cursor()
+    cursor1 = conn.cursor()
     year = 2008
     queryStr = 'SELECT "Season_Id" from season where "Season_Year"='+str(year)+''
     cursor.execute(queryStr)
@@ -329,8 +334,9 @@ def points_table():
         seasonid=int(i[0])
     #cursor1 = conn.cursor()
     cursor.execute('SELECT "Team_Id",team."Team_Name",COUNT(match."Match_Winner_Id")*2 as Points,COUNT(match."Match_Winner_Id") as WON FROM match,team WHERE "Season_Id"='+str(seasonid)+' and team."Team_Id" = match."Match_Winner_Id" GROUP BY team."Team_Name","Team_Id"')
+    cursor1.execute('select "Team_Name","Match_Winner_Id" from match,team where "Match_Winner_Id"=team."Team_Id" and "Match_Date"=(select max("Match_Date") from match where "Season_Id"='+str(seasonid)+')')
     result=cursor.fetchall()
-    #result1=cursor1.fetchall()
+    result1=cursor1.fetchall()
     pointstable=[]
     for i in result:
         x={}
@@ -339,7 +345,12 @@ def points_table():
         x['Wins']=int(i[3])
         x['Team_Name']=i[1]
         x['Season_Year']=year
-        pointstable.append(x);
+        pointstable.append(x)
+    for j in result1:
+        y={}
+        y['Team_Name']=j[0]
+        y['Team_Id']=int(j[1])
+        pointstable.append(y)
     cursor.close()
     conn.close()
     return json.dumps(pointstable)
