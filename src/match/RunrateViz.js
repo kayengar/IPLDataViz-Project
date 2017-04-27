@@ -4,8 +4,6 @@ import Reactbootstrap from 'react-bootstrap';
 import './Runrateviz.css'
 import axios from 'axios'; 
 
-const URLExt = 'match/335987'
-
 class RunrateViz extends Component {
   constructor(props) {
       super(props);
@@ -16,13 +14,12 @@ class RunrateViz extends Component {
   }
 
   componentWillMount() {
-      this.loadGraphData(URLExt);
+      this.loadGraphData();
   }
 
-  loadGraphData(url) {
-      axios.get(`${this.props.urlExt}/${url}`)
+  loadGraphData() {
+      axios.get(`${this.props.urlExt}/${this.props.mId}`)
         .then(res => {
-            console.log(res.data)
             this.setState({data: res.data})
         })
   }
@@ -86,9 +83,7 @@ class RunrateViz extends Component {
             data: result[0]
         }]
     }
-    console.log(result)
     if(result[0].length) {   
-        console.log('render') 
         return(<ReactHighcharts config={config} ref='chart'></ReactHighcharts>)
     } else {
         return null
@@ -96,7 +91,7 @@ class RunrateViz extends Component {
   }
 
   componentWillUnmount() {
-    this.refs.chart.destroy();
+    this.refs.chart.destroy;
   }
 
   render() {
@@ -104,7 +99,6 @@ class RunrateViz extends Component {
     let team1 = gData['Team_One']
     let team2 = gData['Team_Two']
     let graphBanner = team2 + ' vs ' + team1
-    console.log('In render', gData, Object.keys(gData).length)
     return (
       <div className="runrate_innings">
             {(Object.keys(gData).length) ? this.renderGraph(): null}

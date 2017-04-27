@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactHighcharts from 'react-highcharts';
 import axios from 'axios'; 
 
-const URLExt = 'player/runsperseason/20'
+const URLExt = 'runsperseason'
 
 class SeasonRuns extends Component {
   constructor(props) {
@@ -19,7 +19,7 @@ class SeasonRuns extends Component {
   }
 
   loadGraphData(url) {
-      axios.get(`${this.props.urlExt}/${url}`)
+      axios.get(`${this.props.urlExt}/${url}/${this.props.pId}`)
         .then(res => {
             console.log('bowlwe',res.data)
             this.setState({data: res.data})
@@ -82,17 +82,11 @@ class SeasonRuns extends Component {
         data: result[1]
     } ]
     }
-    console.log(result)
-    if(result[0].length) {   
-        console.log('render') 
-        return(<ReactHighcharts config={config} ref='chart'></ReactHighcharts>)
-    } else {
-        return null
-    }
+    return(<ReactHighcharts config={config} ref='chart'></ReactHighcharts>)
   }
 
   componentWillUnmount() {
-    this.refs.chart.destroy();
+    this.refs.chart.destroy;
   }
 
   render() {
@@ -100,7 +94,7 @@ class SeasonRuns extends Component {
     console.log('bowler', gData, Object.keys(gData).length)
     return (
       <div className="batsman_seasonruns">
-        {(Object.keys(gData).length) ? this.renderGraph(): null}
+        {this.renderGraph()}
       </div>
     );
   }

@@ -110,7 +110,6 @@ class SeasonRates extends Component {
     }
     console.log(result)
     if(result[0].length) {   
-        console.log('render') 
         return(<ReactHighcharts config={config} ref='chart'></ReactHighcharts>)
     } else {
         return null
@@ -118,15 +117,14 @@ class SeasonRates extends Component {
   }
 
   componentWillUnmount() {
-    this.refs.chart.destroy();
+    this.refs.chart.destroy;
   }
 
   render() {
     let gData = this.state.data
-    console.log('In season', gData, Object.keys(gData).length)
     return (
       <div className="season_rates">
-        {(Object.keys(gData).length) ? this.renderGraph(): null}
+        {this.renderGraph()}
       </div>
     );
   }

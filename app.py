@@ -31,7 +31,7 @@ def player_data(id):
     print "Connecting to database\n ->%s" % (conn_string)
     conn = psycopg2.connect(conn_string)
     cursor = conn.cursor()
-    player_id=id
+    player_id = id
     cursor.execute('SELECT distinct "Player_Name",player."Player_Id","Dismissal_Type",count("Dismissal_Type") from "player","ball_by_ball" where player."Player_Id"='+str(player_id)+' and "Dismissal_Type" not in (\' \',\'run out\') and "Bowler_Id"="player"."Player_Id" group by "Player_Name",player."Player_Id","Dismissal_Type"')
     playername = cursor.fetchall()
     bowlerStatistics = []
@@ -202,30 +202,59 @@ def player_details(id):
     conn = psycopg2.connect(conn_string)
     cursor = conn.cursor()
     player_id=id
-    cursor.execute('SELECT player."Player_Name",player."Player_Id",player."Country",sum("Batsman_Scored") as "Runs",ball_by_ball."Season_Id","Season_Year" from player,ball_by_ball,season where ball_by_ball."Season_Id"=season."Season_Id" and  player."Player_Id"='+str(player_id)+' and player."Player_Id" = ball_by_ball."Striker_Id" group by ball_by_ball."Season_Id",player."Player_Name",player."Player_Id",player."Country","Season_Year" order by ball_by_ball."Season_Id"')
+    cursor.execute('SELECT player."Player_Name",player."Player_Id",player."Country",player."Batting_Hand",player."Bowling_Skill",sum("Batsman_Scored") as "Runs" from player,ball_by_ball where player."Player_Id"='+str(player_id)+' and player."Player_Id" = ball_by_ball."Striker_Id" group by player."Player_Name",player."Player_Id",player."Country",player."Batting_Hand",player."Bowling_Skill"')
     playername = cursor.fetchall()
     cursor2 = conn.cursor()
-    cursor2.execute('SELECT  player."Player_Name",player."Player_Id",player."Country",COUNT(*) as "Wickets",ball_by_ball."Season_Id","Season_Year" from ball_by_ball, player,season where ball_by_ball."Season_Id"=season."Season_Id" and player."Player_Id"='+str(player_id)+' and player."Player_Id" = ball_by_ball."Bowler_Id" and ball_by_ball."Dismissal_Type" IN (\'caught\',\'lbw\',\'stumped\',\'bowled\',\'caught and bowled\') group by ball_by_ball."Season_Id",player."Player_Name",player."Player_Id",player."Country","Season_Year" order by ball_by_ball."Season_Id"')
+    cursor2.execute('SELECT  player."Player_Name",player."Player_Id",player."Country",COUNT(*) as "Wickets" from ball_by_ball, player where player."Player_Id"='+str(player_id)+' and player."Player_Id" = ball_by_ball."Bowler_Id" and ball_by_ball."Dismissal_Type" IN (\'caught\',\'lbw\',\'stumped\',\'bowled\',\'caught and bowled\',\'hit wicket\') group by player."Player_Name",player."Player_Id",player."Country"')
     player_details = cursor2.fetchall()
+    cursor2.execute('SELECT count(*) from ball_by_ball where "Fielder_Id" ='+str(player_id)+' and "Dismissal_Type" in (\'run out\',\'caught\',\'stumped\',\'caught and bowled\')')
+    player1_details = cursor2.fetchall()
     bowlerStatistics = []
     for i in playername:
         x = {}
         x['Player_Name'] = i[0]
         x['Country'] = i[2]
         x['Player_Id'] = int(i[1])
-        x['Batsman_Scored'] = int(i[3])
-        x['Season_Id'] = int(i[4])
-        x['Season_Year']=int(i[5])
+        x['Batsman_Scored'] = int(i[5])
+        x['Batting_Style']=i[3]
+        x['Bowling_Style']=i[4]
         bowlerStatistics.append(x)
+    bowlerStatistics1 =[]
     for j in player_details:
         y = {}
         y['Wickets'] = int(j[3])
-        y['Season_Year']=int(j[5])
-        bowlerStatistics.append(y)
+        bowlerStatistics1.append(y)
+    if not bowlerStatistics1:
+        j={}
+        j['Wickets']=0
+        bowlerStatistics1.append(j)
+    bowlerStatistics2 =[]
+    for l in player1_details:
+        y = {}
+        y['Dismissals'] = int(l[0])
+        bowlerStatistics2.append(y)
+    if not bowlerStatistics2:
+        j={}
+        j['Dismissals']=0
+        bowlerStatistics2.append(j)
+    loop =0
+    finallist=[]
+    while loop < len(bowlerStatistics):
+        k={}
+        k['Player_Name']=bowlerStatistics[loop]['Player_Name']
+        k['Country']=bowlerStatistics[loop]['Country']
+        k['Player_Id']=bowlerStatistics[loop]['Player_Id']
+        k['Batsman_Scored']=bowlerStatistics[loop]['Batsman_Scored']
+        k['Batting_Style']=bowlerStatistics[loop]['Batting_Style']
+        k['Bowling_Style']=bowlerStatistics[loop]['Bowling_Style']
+        k['Wickets']=bowlerStatistics1[loop]['Wickets']
+        k['Dismissals']=bowlerStatistics2[loop]['Dismissals']
+        finallist.append(k)
+        loop+=1
     cursor.close()
     cursor2.close()
     conn.close()
-    return json.dumps(bowlerStatistics)
+    return json.dumps(finallist)
 
 @app.route("/iplviz/player/playerradar/<id>")
 def player_radar(id):
@@ -565,9 +594,41 @@ def season_teamslogruns(yr):
         x['Season_Year']=year
         x['Runs']=int(i[2])
         teamslogruns.append(x);
+    teammiddleruns=[]
+    cursor.execute('SELECT "Team_Id","Team_Name",sum("Batsman_Scored")+sum("Extra_Runs") from ball_by_ball,team where "Over_Id">=7 and "Over_Id"<=14 and "Season_Id"='+str(seasonid)+' and team."Team_Id"=ball_by_ball."Team_Batting_Id" group by "Team_Name","Team_Id" order by "Team_Name"')
+    result=cursor.fetchall()
+    for i in result:
+        x={}
+        x['Team_Id']=int(i[0])
+        x['Team_Name']=i[1]
+        x['Season_Year']=year
+        x['Runs']=int(i[2])
+        teammiddleruns.append(x);
+    teampowerruns=[]
+    cursor.execute('SELECT "Team_Id","Team_Name",sum("Batsman_Scored")+sum("Extra_Runs") from ball_by_ball,team where "Over_Id">=1 and "Over_Id"<=6 and "Season_Id"='+str(seasonid)+' and team."Team_Id"=ball_by_ball."Team_Batting_Id" group by "Team_Name","Team_Id" order by "Team_Name"')
+    result=cursor.fetchall()
+    for i in result:
+        x={}
+        x['Team_Id']=int(i[0])
+        x['Team_Name']=i[1]
+        x['Season_Year']=year
+        x['Runs']=int(i[2])
+        teampowerruns.append(x);
+    loop=0
+    finallist=[]
+    while loop < len(teampowerruns):
+        k={}
+        k['Team_Id']=teampowerruns[loop]['Team_Id']
+        k['Team_Name']=teampowerruns[loop]['Team_Name']
+        k['Season_Year']=year
+        k['Powerruns']=teampowerruns[loop]['Runs']
+        k['Middleruns']=teammiddleruns[loop]['Runs']
+        k['Slogruns']=teamslogruns[loop]['Runs']
+        finallist.append(k)
+        loop+=1
     cursor.close()
     conn.close()
-    return json.dumps(teamslogruns)
+    return json.dumps(finallist)
 
 @app.route("/iplviz/season/teamboundruns/<yr>")
 def season_teamboundruns(yr):
@@ -958,6 +1019,10 @@ def match_team1powerruns(id):
         x['Team_Name']=i[1]
         x['Runs']=int(i[2])
         teamruns.append(x);
+    if not teamruns:
+        j={}
+        j['Runs']=0
+        teamruns.append(j);
     cursor.execute('select "Team_Batting_Id","Team_Name",sum("Batsman_Scored")+sum("Extra_Runs") as "Runs_In_Powerplay" from ball_by_ball,team where "Match_Id" = '+str(matchid)+' and "Over_Id" >= 7 and "Over_Id" <=14 and "Team_Batting_Id" in (select "Team_Name_Id" from match where "Match_Id" = '+str(matchid)+') and team."Team_Id"="Team_Batting_Id" group by "Team_Batting_Id","Team_Name"')
     result=cursor.fetchall()
     teammiddleruns=[]
@@ -967,6 +1032,10 @@ def match_team1powerruns(id):
         x['Team_Name']=i[1]
         x['Runs']=int(i[2])
         teammiddleruns.append(x);
+    if not teammiddleruns:
+        j={}
+        j['Runs']=0
+        teammiddleruns.append(j);
     cursor.execute('select "Team_Batting_Id","Team_Name",sum("Batsman_Scored")+sum("Extra_Runs") as "Runs_In_Powerplay" from ball_by_ball,team where "Match_Id" = '+str(matchid)+' and "Over_Id" >= 15 and "Over_Id" <=20 and "Team_Batting_Id" in (select "Team_Name_Id" from match where "Match_Id" = '+str(matchid)+') and team."Team_Id"="Team_Batting_Id" group by "Team_Batting_Id","Team_Name"')
     result=cursor.fetchall()
     teamslogruns=[]
@@ -976,6 +1045,10 @@ def match_team1powerruns(id):
         x['Team_Name']=i[1]
         x['Runs']=int(i[2])
         teamslogruns.append(x);
+    if not teamslogruns:
+        j={}
+        j['Runs']=0
+        teamslogruns.append(j);
     loop=0
     finallist=[]
     while loop < len(teamslogruns):
@@ -1007,6 +1080,10 @@ def match_team2powerruns(id):
         x['Team_Name']=i[1]
         x['Runs']=int(i[2])
         teamruns.append(x);
+    if not teamruns:
+        j={}
+        j['Runs']=0
+        teamruns.append(j);
     cursor.execute('select "Team_Batting_Id","Team_Name",sum("Batsman_Scored")+sum("Extra_Runs") as "Runs_In_Powerplay" from ball_by_ball,team where "Match_Id" = '+str(matchid)+' and "Over_Id" >= 7 and "Over_Id" <=14 and "Team_Batting_Id" in (select "Opponent_Team_Id" from match where "Match_Id" = '+str(matchid)+') and team."Team_Id"="Team_Batting_Id" group by "Team_Batting_Id","Team_Name"')
     result=cursor.fetchall()
     teammiddleruns=[]
@@ -1016,6 +1093,10 @@ def match_team2powerruns(id):
         x['Team_Name']=i[1]
         x['Runs']=int(i[2])
         teammiddleruns.append(x);
+    if not teammiddleruns:
+        j={}
+        j['Runs']=0
+        teammiddleruns.append(j);
     cursor.execute('select "Team_Batting_Id","Team_Name",sum("Batsman_Scored")+sum("Extra_Runs") as "Runs_In_Powerplay" from ball_by_ball,team where "Match_Id" = '+str(matchid)+' and "Over_Id" >= 15 and "Over_Id" <=20 and "Team_Batting_Id" in (select "Opponent_Team_Id" from match where "Match_Id" = '+str(matchid)+') and team."Team_Id"="Team_Batting_Id" group by "Team_Batting_Id","Team_Name"')
     result=cursor.fetchall()
     teamslogruns=[]
@@ -1025,6 +1106,10 @@ def match_team2powerruns(id):
         x['Team_Name']=i[1]
         x['Runs']=int(i[2])
         teamslogruns.append(x);
+    if not teamslogruns:
+        j={}
+        j['Runs']=0
+        teamslogruns.append(j);
     loop=0
     finallist=[]
     while loop < len(teamslogruns):
@@ -1048,39 +1133,61 @@ def match_teampowerwickets(id):
     conn = psycopg2.connect(conn_string)
     cursor = conn.cursor()
     matchid=id
+    cursor.execute('select "Team_Name","Team_Name_Id" from match,team where match."Team_Name_Id"=team."Team_Id" and "Match_Id"='+str(matchid))
+    result=cursor.fetchall()
+    teams=[]
+    for i in result:
+        x={}
+        x['Team_Id']=i[0]
+        x['Team_Name']=int(i[1])
+        teams.append(x);
     cursor.execute('select "Team_Bowling_Id","Team_Name",count(*) as "Wicktes_In_Powerplay" from ball_by_ball,team where "Match_Id" = '+str(matchid)+' and "Over_Id" >= 1 and "Over_Id" <=6 and "Dismissal_Type" not in (\' \',\'retired hurt\') and "Team_Bowling_Id" in (select "Team_Name_Id" from match where "Match_Id" = '+str(matchid)+') and "Team_Id"="Team_Bowling_Id" group by "Team_Bowling_Id","Team_Name"')
     result=cursor.fetchall()
+    print('Powerplay',result)
     teampower=[]
     for i in result:
         x={}
-        x['Team_Id']=int(i[0])
-        x['Team_Name']=i[1]
         x['Wickets']=int(i[2])
         teampower.append(x);
+    if not teampower:
+        j={}
+        j['Wickets']=0
+        teampower.append(j);
+
     cursor.execute('select "Team_Bowling_Id","Team_Name",count(*) as "Wicktes_In_Powerplay" from ball_by_ball,team where "Match_Id" = '+str(matchid)+' and "Over_Id" >= 7 and "Over_Id" <=14 and "Dismissal_Type" not in (\' \',\'retired hurt\') and "Team_Bowling_Id" in (select "Team_Name_Id" from match where "Match_Id" = '+str(matchid)+') and "Team_Id"="Team_Bowling_Id" group by "Team_Bowling_Id","Team_Name"')
     result=cursor.fetchall()
+    print('middle',result)
     teammiddle=[]
     for i in result:
+        print('for team middle')
         x={}
-        x['Team_Id']=int(i[0])
-        x['Team_Name']=i[1]
         x['Wickets']=int(i[2])
         teammiddle.append(x);
+    if not teammiddle:
+        print('if case middle')
+        j={}
+        j['Wickets']=0
+        teammiddle.append(j);
+    print('MiddleArray',teammiddle)
     cursor.execute('select "Team_Bowling_Id","Team_Name",count(*) as "Wicktes_In_Powerplay" from ball_by_ball,team where "Match_Id" = '+str(matchid)+' and "Over_Id" >= 15 and "Over_Id" <=20 and "Dismissal_Type" not in (\' \',\'retired hurt\') and "Team_Bowling_Id" in (select "Team_Name_Id" from match where "Match_Id" = '+str(matchid)+') and "Team_Id"="Team_Bowling_Id" group by "Team_Bowling_Id","Team_Name"')
     result=cursor.fetchall()
+    print('slog',result)
     teamslog=[]
     for i in result:
         x={}
-        x['Team_Id']=int(i[0])
-        x['Team_Name']=i[1]
         x['Wickets']=int(i[2])
         teamslog.append(x);
+    if not teamslog:
+        j={}
+        j['Wickets']=0
+        teamslog.append(j);
     loop=0
     finallist=[]
+    print()
     while loop < len(teamslog):
         k={}
-        k['Team_Id']=teampower[loop]['Team_Id']
-        k['Team_Name']=teampower[loop]['Team_Name']
+        k['Team_Id']=teams[loop]['Team_Id']
+        k['Team_Name']=teams[loop]['Team_Name']
         k['Power']=teampower[loop]['Wickets']
         k['Middle']=teammiddle[loop]['Wickets']
         k['Slog']=teamslog[loop]['Wickets']
@@ -1097,39 +1204,61 @@ def match_team2powerwickets(id):
     conn = psycopg2.connect(conn_string)
     cursor = conn.cursor()
     matchid=id
+    cursor.execute('select "Team_Name","Team_Name_Id" from match,team where match."Team_Name_Id"=team."Team_Id" and "Match_Id"='+str(matchid))
+    result=cursor.fetchall()
+    teams=[]
+    for i in result:
+        x={}
+        x['Team_Id']=i[0]
+        x['Team_Name']=int(i[1])
+        teams.append(x);
     cursor.execute('select "Team_Bowling_Id","Team_Name",count(*) as "Wicktes_In_Powerplay" from ball_by_ball,team where "Match_Id" = '+str(matchid)+' and "Over_Id" >= 1 and "Over_Id" <=6 and "Dismissal_Type" not in (\' \',\'retired hurt\') and "Team_Bowling_Id" in (select "Opponent_Team_Id" from match where "Match_Id" = '+str(matchid)+') and "Team_Id"="Team_Bowling_Id" group by "Team_Bowling_Id","Team_Name"')
     result=cursor.fetchall()
+    print('Powerplay',result)
     teampower=[]
     for i in result:
         x={}
-        x['Team_Id']=int(i[0])
-        x['Team_Name']=i[1]
         x['Wickets']=int(i[2])
         teampower.append(x);
+    if not teampower:
+        j={}
+        j['Wickets']=0
+        teampower.append(j);
+
     cursor.execute('select "Team_Bowling_Id","Team_Name",count(*) as "Wicktes_In_Powerplay" from ball_by_ball,team where "Match_Id" = '+str(matchid)+' and "Over_Id" >= 7 and "Over_Id" <=14 and "Dismissal_Type" not in (\' \',\'retired hurt\') and "Team_Bowling_Id" in (select "Opponent_Team_Id" from match where "Match_Id" = '+str(matchid)+') and "Team_Id"="Team_Bowling_Id" group by "Team_Bowling_Id","Team_Name"')
     result=cursor.fetchall()
+    print('middle',result)
     teammiddle=[]
     for i in result:
+        print('for team middle')
         x={}
-        x['Team_Id']=int(i[0])
-        x['Team_Name']=i[1]
         x['Wickets']=int(i[2])
         teammiddle.append(x);
+    if not teammiddle:
+        print('if case middle')
+        j={}
+        j['Wickets']=0
+        teammiddle.append(j);
+    print('MiddleArray',teammiddle)
     cursor.execute('select "Team_Bowling_Id","Team_Name",count(*) as "Wicktes_In_Powerplay" from ball_by_ball,team where "Match_Id" = '+str(matchid)+' and "Over_Id" >= 15 and "Over_Id" <=20 and "Dismissal_Type" not in (\' \',\'retired hurt\') and "Team_Bowling_Id" in (select "Opponent_Team_Id" from match where "Match_Id" = '+str(matchid)+') and "Team_Id"="Team_Bowling_Id" group by "Team_Bowling_Id","Team_Name"')
     result=cursor.fetchall()
+    print('slog',result)
     teamslog=[]
     for i in result:
         x={}
-        x['Team_Id']=int(i[0])
-        x['Team_Name']=i[1]
         x['Wickets']=int(i[2])
         teamslog.append(x);
+    if not teamslog:
+        j={}
+        j['Wickets']=0
+        teamslog.append(j);
     loop=0
     finallist=[]
+    print()
     while loop < len(teamslog):
         k={}
-        k['Team_Id']=teampower[loop]['Team_Id']
-        k['Team_Name']=teampower[loop]['Team_Name']
+        k['Team_Id']=teams[loop]['Team_Id']
+        k['Team_Name']=teams[loop]['Team_Name']
         k['Power']=teampower[loop]['Wickets']
         k['Middle']=teammiddle[loop]['Wickets']
         k['Slog']=teamslog[loop]['Wickets']

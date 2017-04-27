@@ -6,6 +6,8 @@ import AppHeader from './AppHeader'
 import TeamPerformance from './team/TeamPerformance'
 import TeamResults from './team/TeamResults'
 import TeamToss from './team/TeamToss'
+import TeamPosition from './team/TeamPosition'
+import {browserHistory} from 'react-router'
 
 const apiURL = 'http://localhost:5000/iplviz/team'
 const matchListURL = 'getAllMatchesPlayed'
@@ -23,6 +25,8 @@ class TeamView extends Component {
             starperfList: [],
             teamPosition: []
         }
+        this.handlePlayer = this.handlePlayer.bind(this)
+        // this.handleMatch = this.handleMatch.bind(this)
     }
 
     componentWillMount() {
@@ -74,12 +78,25 @@ class TeamView extends Component {
     //     })
     //     return tName
     // }
+    handlePlayer(k, e) {
+      let pId = e.target.getAttribute('data-attr')
+      sessionStorage.setItem('playerId', parseInt(pId))
+      browserHistory.push('/playerDetails')
+    }
+    
+    handleMatch(k, e) {
+      let mId = e.target.getAttribute('data-matchid')
+      let mName = e.target.text
+      sessionStorage.setItem('matchId', parseInt(mId))
+      sessionStorage.setItem('matchName', mName)
+      browserHistory.push('/matchDetails')
+    }
 
     playerList() {
       let pList = this.state.playerList
       return(
           <div className="container-fluid">
-            <Nav bsStyle="pills" stacked onSelect={this.handleSelect}>
+            <Nav bsStyle="pills" stacked onSelect={this.handlePlayer}>
                 {
                     pList.map(function(o,i){
                         return(<NavItem eventKey={i+1} key={i+1} data-attr={o.Player_Id}>{o.Player_Name}</NavItem>)
@@ -94,7 +111,7 @@ class TeamView extends Component {
       let mList = this.state.matchList
       return(
           <div className="container-fluid">
-            <Nav bsStyle="pills" stacked onSelect={this.handleSelect}>
+            <Nav bsStyle="pills" stacked onSelect={this.handleMatch}>
                 {
                     mList.map(function(o,i){
                         return(<NavItem eventKey={i+1} key={i+1} data-matchid={o.Match_Id}>{o.Team1_Name} vs {o.Team2_Name}</NavItem>)
@@ -105,26 +122,29 @@ class TeamView extends Component {
       )
     }
 
-    startPerformerTable() {
+    starPerformerTable() {
         let tableData = this.state.starperfList
         console.log(tableData)
-        return (  
-            <Table striped bordered condensed hover>
-                <thead>
-                    <tr>
-                        <th>Best Batsmen</th>
-                        <th>Best Bowler</th>
-                        {/*<th>Best Wicketkeeper</th>                    */}
-                    </tr>
-                </thead>
-            <tbody>
-                <tr>
-                    <td>{tableData.Best_Batsman}</td>
-                    <td>{tableData.Best_Bowler}</td>
-                    {/*<td>{tableData.Best_WicketKeeper}</td>*/}
-                </tr>
-        </tbody>
-        </Table>
+        return ( 
+            <div>
+                <h3>Star Performers Table</h3>
+                <Table striped bordered condensed hover>
+                    <thead>
+                        <tr>
+                            <th>Best Batsmen</th>
+                            <th>Best Bowler</th>
+                            {/*<th>Best Wicketkeeper</th>                    */}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{tableData.Best_Batsman}</td>
+                            <td>{tableData.Best_Bowler}</td>
+                            {/*<td>{tableData.Best_WicketKeeper}</td>*/}
+                        </tr>
+                </tbody>
+                </Table>
+            </div>
         )
     }
 
@@ -146,6 +166,13 @@ class TeamView extends Component {
         )
     }
 
+    renderTeamPosition(id, yr) {
+        return (
+            <TeamPosition urlExt={apiURL} teamid={id} seasonYear={yr}/>
+        )
+    }
+    
+
     render() {
         let {teamid, seasonYear} = sessionStorage
         // let tName = this.teamName(teamid)
@@ -160,8 +187,8 @@ class TeamView extends Component {
                             {this.playerList()}
                         </Col>
                         <Col xs={10} md={8}>
-                            <h3>Star Performers Table</h3>
-                            {this.startPerformerTable()}
+                            {this.starPerformerTable()}
+                            {this.renderTeamPosition(teamid, seasonYear)}
                             {this.renderPerformanceGraph(teamid, seasonYear)}
                             {this.renderTeamResultsGraph(teamid, seasonYear)}
                             {this.renderTeamTossGraph(teamid, seasonYear)}

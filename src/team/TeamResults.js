@@ -100,7 +100,7 @@ class TeamResults extends Component {
   }
 
   componentWillUnmount() {
-    this.refs.chart.destroy();
+    this.refs.chart.destroy;
   }
 
   render() {

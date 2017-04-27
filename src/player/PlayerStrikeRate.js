@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactHighcharts from 'react-highcharts';
 import axios from 'axios'; 
 
-const URLExt = 'player/strikerate/20'
+const URLExt = 'strikerate'
 
 class PlayerStrikeRate extends Component {
   constructor(props) {
@@ -19,9 +19,8 @@ class PlayerStrikeRate extends Component {
   }
 
   loadGraphData(url) {
-      axios.get(`${this.props.urlExt}/${url}`)
+      axios.get(`${this.props.urlExt}/${url}/${this.props.pId}`)
         .then(res => {
-            console.log('bowlwe',res.data)
             this.setState({data: res.data})
         })
   }
@@ -39,22 +38,19 @@ class PlayerStrikeRate extends Component {
       tmpArr.push(strikerate)
       tmpArr.push(overs)
       tmpArr.push(names)
-      console.log('Wicket temp',tmpArr[1])
       return tmpArr
   }
 
   renderGraph() {
     let graphData = this.state.data;
     let result = this.parseGraphData(graphData)
-    console.log('Name of the player',result[2][0])
-    console.log('strikerate',result[0])
-    console.log('names',result[1])
+
     let config = {
         chart: {
         type: 'line'
     },
     title: {
-        text: 'Strikerrate in 20 overs-'+result[2][0]
+        text: 'Striker Rate in 20 overs-'+result[2][0]
     },
     subtitle: {
         text: 'Source: Kaggle.com'
@@ -66,7 +62,7 @@ class PlayerStrikeRate extends Component {
     yAxis: {
         min: 0,
         title: {
-            text: 'Strikerate'
+            text: 'Strike Rate'
         }
     },
     plotOptions: {
@@ -76,29 +72,22 @@ class PlayerStrikeRate extends Component {
         }
     },
     series: [{
-        name: 'Strikerate',
+        name: 'Strike Rate',
         data: result[0]
     } ]
     }
-    console.log(result)
-    if(result[0].length) {   
-        console.log('render') 
         return(<ReactHighcharts config={config} ref='chart'></ReactHighcharts>)
-    } else {
-        return null
-    }
   }
 
   componentWillUnmount() {
-    this.refs.chart.destroy();
+    this.refs.chart.destroy;
   }
 
   render() {
     let gData = this.state.data
-    console.log('bowler', gData, Object.keys(gData).length)
     return (
       <div className="player_strikerate">
-        {(Object.keys(gData).length) ? this.renderGraph(): null}
+        {this.renderGraph()}
       </div>
     );
   }

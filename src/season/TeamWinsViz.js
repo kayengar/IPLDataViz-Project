@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactHighcharts from 'react-highcharts';
 import axios from 'axios';
 
-const URLExt = 'season/teamwins/2008'
+const URLExt = 'season/teamwins'
 
 class TeamWinsViz extends Component {
   constructor(props) {
@@ -13,15 +13,17 @@ class TeamWinsViz extends Component {
       this.loadGraphData = this.loadGraphData.bind(this);
   }
 
-  componentWillMount() {
+  shouldComponentUpdate(nextProps, nextState) {
+      return this.props.currentYr !== nextProps.currentYr || this.state.data !== nextState.data
+  }
+
+  componentDidMount() {
       this.loadGraphData(URLExt);
-      console.log('in')
   }
 
   loadGraphData(url) {
-      axios.get(`${this.props.urlExt}/${url}`)
+      axios.get(`${this.props.urlExt}/${url}/${this.props.currentYr}`)
         .then(res => {
-            console.log(res.data)
             this.setState({data: res.data})
         })
   }
@@ -45,13 +47,12 @@ class TeamWinsViz extends Component {
   renderGraph() {
     let graphData = this.state.data;
     let result = this.parseGraphData(graphData);
-    console.log('Team names',result[1])
     let config = {
         chart: {
             type: 'column'
         },
         title: {
-            text: 'Teams vs No. of Wins for the year '+result[2][0]
+            text: 'Teams vs No. of Wins for the year '+ this.props.currentYr
         },
         subtitle: {
             text: 'Source: kaggle.com'
@@ -83,9 +84,7 @@ class TeamWinsViz extends Component {
             data: result[0]
         }]
     }
-    console.log(result)
     if(result[0].length) {   
-        console.log('render') 
         return(<ReactHighcharts config={config} ref='chart'></ReactHighcharts>)
     } else {
         return null
@@ -93,12 +92,11 @@ class TeamWinsViz extends Component {
   }
 
   componentWillUnmount() {
-    this.refs.chart.destroy();
+    this.refs.chart.destroy;
   }
 
   render() {
     let gData = this.state.data
-    console.log('In season', gData, Object.keys(gData).length)
     return (
       <div className="season_wins">
         {(Object.keys(gData).length) ? this.renderGraph(): null}

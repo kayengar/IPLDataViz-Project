@@ -96,7 +96,7 @@ class TeamPerformance extends Component {
   }
 
   componentWillUnmount() {
-    this.refs.chart.destroy();
+    this.refs.chart.destroy;
   }
 
   render() {

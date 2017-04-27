@@ -15,14 +15,12 @@ class TeamToss extends Component {
 
   componentWillMount() {
       this.loadGraphData();
-      console.log('in')
   }
 
   loadGraphData() {
       let {teamid, seasonYear} = this.props
       axios.get(`${this.props.urlExt}/${URLExt}/${teamid}/${seasonYear}`)
         .then(res => {
-            console.log('bowlwe',res.data)
             this.setState({data: res.data})
         })
   }
@@ -43,7 +41,6 @@ class TeamToss extends Component {
   renderGraph() {
     let graphData = this.state.data;
     let result = this.parseGraphData(graphData);
-    //console.log('kannan',result[0][0])
     let config = {
     chart: {
         plotBackgroundColor: null,
@@ -84,9 +81,7 @@ class TeamToss extends Component {
         }]
     }]
     }
-    console.log(result)
     if(result[0].length) {   
-        console.log('render') 
         return(<ReactHighcharts config={config} ref='chart'></ReactHighcharts>)
     } else {
         return null
@@ -94,12 +89,11 @@ class TeamToss extends Component {
   }
 
   componentWillUnmount() {
-    this.refs.chart.destroy();
+    this.refs.chart.destroy;
   }
 
   render() {
     let gData = this.state.data
-    console.log('bowler', gData, Object.keys(gData).length)
     return (
       <div className="team_teamtoss">
         {(Object.keys(gData).length) ? this.renderGraph(): null}

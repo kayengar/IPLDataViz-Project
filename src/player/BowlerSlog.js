@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactHighcharts from 'react-highcharts';
 import axios from 'axios'; 
 
-const URLExt = 'player/bowlerslogovers/32'
+const URLExt = 'bowlerslogovers'
 
 class BowlerSlog extends Component {
   constructor(props) {
@@ -14,15 +14,14 @@ class BowlerSlog extends Component {
   }
 
   componentWillMount() {
-      this.loadGraphData(URLExt);
-      console.log('in')
+      this.loadGraphData();
   }
 
   loadGraphData(url) {
-      axios.get(`${this.props.urlExt}/${url}`)
+      axios.get(`${this.props.urlExt}/${URLExt}/${this.props.pId}`)
         .then(res => {
-            console.log('bowlwe',res.data)
-            this.setState({data: res.data})
+            console.log("Bowler Slog", res.data)
+            this.setState({data: res.data, playerId: this.props.pId})
         })
   }
 
@@ -43,7 +42,6 @@ class BowlerSlog extends Component {
   renderGraph() {
     let graphData = this.state.data;
     let result = this.parseGraphData(graphData);
-    //console.log('kannan',result[0][0])
     let config = {
           chart: {
         plotBackgroundColor: null,
@@ -75,49 +73,50 @@ class BowlerSlog extends Component {
         colorByPoint: true,
         data: [{
             name:'Over 15',
-            y: result[0][0]
+            y: result[0][0] ? result[0][0] : 0
         }, {
             name:'Over 16',
-            y: result[0][1]
+            y: result[0][1] ? result[0][1] : 0
         },
         {
             name:'Over 17',
-            y: result[0][2]
+            y: result[0][2] ? result[0][2] : 0
         },
         {
             name:'Over 18',
-            y: result[0][3]
+            y: result[0][3] ? result[0][3] : 0
         },
         {
             name:'Over 19',
-            y: result[0][4]
+            y: result[0][4] ? result[0][4] : 0
         },
         {
             name:'Over 20',
-            y: result[0][5]
+            y: result[0][5] ? result[0][5] : 0
         }
         ]
     }]
-    }
-    console.log(result)
-    if(result[0].length) {   
-        console.log('render') 
+}
+    if(result) {
         return(<ReactHighcharts config={config} ref='chart'></ReactHighcharts>)
     } else {
         return null
     }
+}
+
+  componentDidMount() {
+    // this.refs.chart.redraw;
   }
 
   componentWillUnmount() {
-    this.refs.chart.destroy();
+    this.refs.chart ? this.refs.chart.destroy : null;
   }
 
   render() {
     let gData = this.state.data
-    console.log('bowler', gData, Object.keys(gData).length)
     return (
       <div className="bowler_slog">
-        {(Object.keys(gData).length) ? this.renderGraph(): null}
+        { this.renderGraph()}
       </div>
     );
   }

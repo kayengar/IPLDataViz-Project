@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactHighcharts from 'react-highcharts';
 import axios from 'axios'; 
 
-const URLExt = 'player/economyrate/32'
+const URLExt = 'economyrate'
 
 class PlayerEconRate extends Component {
   constructor(props) {
@@ -19,7 +19,7 @@ class PlayerEconRate extends Component {
   }
 
   loadGraphData(url) {
-      axios.get(`${this.props.urlExt}/${url}`)
+      axios.get(`${this.props.urlExt}/${url}/${this.props.pId}`)
         .then(res => {
             console.log('bowlwe',res.data)
             this.setState({data: res.data})
@@ -81,16 +81,12 @@ class PlayerEconRate extends Component {
     } ]
     }
     console.log(result)
-    if(result[0].length) {   
-        console.log('render') 
         return(<ReactHighcharts config={config} ref='chart'></ReactHighcharts>)
-    } else {
-        return null
-    }
+
   }
 
   componentWillUnmount() {
-    this.refs.chart.destroy();
+    this.refs.chart.destroy;
   }
 
   render() {
@@ -98,7 +94,7 @@ class PlayerEconRate extends Component {
     console.log('bowler', gData, Object.keys(gData).length)
     return (
       <div className="player_econrate">
-        {(Object.keys(gData).length) ? this.renderGraph(): null}
+        {this.renderGraph()}
       </div>
     );
   }

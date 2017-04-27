@@ -22,18 +22,15 @@ class PlayerView extends Component {
     //   this.loadPointsTableData(pointsUrl);
     //   this.loadTopBatsmenData(topBatsmanUrl);
     //   this.loadTopBowlersData(topBowlersUrl);
-      console.log('in')
   }
 
 //   shouldComponentUpdate(nextProps) {
-//     console.log("---------------------------------------------------------", this.props.currentYr,  nextProps.currentYr)
 //     return (this.props.currentYr !== nextProps.currentYr)
 //   }
 
   loadPointsTableData(url) {
       axios.get(`${this.props.urlExt}/${url}/${this.props.currentYr}`)
         .then(res => {
-            console.log("Tables",res.data)
             this.setState({pointsdata: res.data, currentYr: this.props.currentYr})
         })
   }
@@ -41,7 +38,6 @@ class PlayerView extends Component {
   loadTopBatsmenData(url) {
       axios.get(`${this.props.urlExt}/${url}/${this.props.currentYr}`)
         .then(res => {
-            console.log("Tables",res.data)
             this.setState({topbatsmendata: res.data, currentYr: this.props.currentYr})
         })
   }
@@ -49,7 +45,6 @@ class PlayerView extends Component {
   loadTopBowlersData(url) {
       axios.get(`${this.props.urlExt}/${url}/${this.props.currentYr}`)
         .then(res => {
-            console.log("Tables",res.data)
             this.setState({topbowlersdata: res.data, currentYr: this.props.currentYr})
         })
   }
@@ -57,7 +52,6 @@ class PlayerView extends Component {
   renderPointsTable() {
     let tableData = this.state.playerdata;
     // let winner = 
-    console.log("Here", tableData)
     return(
         <div>
             <h4>Player Name: {tableData[0].Player_Name}</h4>

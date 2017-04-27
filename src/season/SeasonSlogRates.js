@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactHighcharts from 'react-highcharts';
 import axios from 'axios';
 
-const URLExt = 'season/teamslogrunrates/2008'
+const URLExt = 'season/teamslogrunrates'
 
 class SeasonSlogRates extends Component {
   constructor(props) {
@@ -19,9 +19,8 @@ class SeasonSlogRates extends Component {
   }
 
   loadGraphData(url) {
-      axios.get(`${this.props.urlExt}/${url}`)
+      axios.get(`${this.props.urlExt}/${url}/${this.props.currentYr}`)
         .then(res => {
-            console.log(res.data)
             this.setState({data: res.data})
         })
   }
@@ -50,7 +49,6 @@ class SeasonSlogRates extends Component {
     let graphData = this.state.data;
     let result = this.parseGraphData(graphData);
     console.log('Team names',result[1])
-    console.log('hello from kannan')
     let config = {
         chart: {
             type: 'column',
@@ -60,10 +58,12 @@ class SeasonSlogRates extends Component {
             beta: 15,
             depth: 50,
             viewDistance: 25
-        }
+        },
+        width: 600,
+        height:400
         },
         title: {
-            text: 'Teams vs Slog Run,Economy Rates in year-'+result[2][0]
+            text: 'Teams vs Slog Run,Economy Rates in year- '+result[2][0]
         },
         subtitle: {
             text: 'Source: kaggle.com'
@@ -108,17 +108,11 @@ class SeasonSlogRates extends Component {
         }
         ]
     }
-    console.log(result)
-    if(result[0].length) {   
-        console.log('render') 
         return(<ReactHighcharts config={config} ref='chart'></ReactHighcharts>)
-    } else {
-        return null
-    }
   }
 
   componentWillUnmount() {
-    this.refs.chart.destroy();
+    this.refs.chart.destroy;
   }
 
   render() {
@@ -126,7 +120,7 @@ class SeasonSlogRates extends Component {
     console.log('In season', gData, Object.keys(gData).length)
     return (
       <div className="season_slogrates">
-        {(Object.keys(gData).length) ? this.renderGraph(): null}
+        {this.renderGraph()}
       </div>
     );
   }

@@ -22,7 +22,6 @@ class RunrateViz extends Component {
   loadGraphData(url) {
       axios.get(`${this.props.urlExt}/${url}`)
         .then(res => {
-            console.log(res.data)
             this.setState({data: res.data})
         })
   }
@@ -86,17 +85,11 @@ class RunrateViz extends Component {
             data: result[0]
         }]
     }
-    console.log(result)
-    if(result[0].length) {   
-        console.log('render') 
         return(<ReactHighcharts config={config} ref='chart'></ReactHighcharts>)
-    } else {
-        return null
-    }
   }
 
   componentWillUnmount() {
-    this.refs.chart.destroy();
+    this.refs.chart.destroy;
   }
 
   render() {
@@ -104,7 +97,6 @@ class RunrateViz extends Component {
     let team1 = gData['Team_One']
     let team2 = gData['Team_Two']
     let graphBanner = team2 + ' vs ' + team1
-    console.log('In render', gData, Object.keys(gData).length)
     return (
       <div className="runrate_innings">
         <div className="dropdown">
@@ -120,7 +112,7 @@ class RunrateViz extends Component {
         </div>
         <div>
             <h2>{graphBanner}</h2>
-            {(Object.keys(gData).length) ? this.renderGraph(): null}
+            {this.renderGraph()}
         </div>
       </div>
     );

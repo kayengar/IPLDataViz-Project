@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactHighcharts from 'react-highcharts';
 import axios from 'axios'; 
 
-const URLExt = 'season/teamboundruns/2008'
+const URLExt = 'season/teamboundruns'
 
 class SeasonBoundRuns extends Component {
   constructor(props) {
@@ -13,15 +13,22 @@ class SeasonBoundRuns extends Component {
       this.loadGraphData = this.loadGraphData.bind(this);
   }
 
-  componentWillMount() {
-      this.loadGraphData(URLExt);
-      console.log('in')
+  shouldComponentUpdate(nextProps, nextState) {
+      return this.props.currentYr !== nextProps.currentYr || this.state.data !== nextState.data
+  }
+
+//   componentWillMount() {
+//     this.loadGraphData(URLExt);
+//   }
+
+  componentDidMount() {
+    this.loadGraphData(URLExt);
   }
 
   loadGraphData(url) {
-      axios.get(`${this.props.urlExt}/${url}`)
+      console.log(`${this.props.urlExt}/${url}/${this.props.currentYr}`)
+      axios.get(`${this.props.urlExt}/${url}/${this.props.currentYr}`)
         .then(res => {
-            console.log('bowlwe',res.data)
             this.setState({data: res.data})
         })
   }
@@ -48,13 +55,13 @@ class SeasonBoundRuns extends Component {
   renderGraph() {
     let graphData = this.state.data;
     let result = this.parseGraphData(graphData);
-    console.log('kannan',result[0])
+    console.log('Result', result)
     let config = {
         chart: {
         type: 'bar'
     },
     title: {
-        text: 'Boundary Runs in Season-'+result[3][0]
+        text: 'Boundary Runs in Season-'+this.props.currentYr
     },
     xAxis: {
         categories: result[2]
@@ -81,9 +88,7 @@ class SeasonBoundRuns extends Component {
         data: result[1]
     }]
     }
-    console.log(result)
     if(result[0].length) {   
-        console.log('render') 
         return(<ReactHighcharts config={config} ref='chart'></ReactHighcharts>)
     } else {
         return null
@@ -91,15 +96,15 @@ class SeasonBoundRuns extends Component {
   }
 
   componentWillUnmount() {
-    this.refs.chart.destroy();
+    this.refs.chart.destroy;
   }
 
   render() {
     let gData = this.state.data
-    console.log('bowler', gData, Object.keys(gData).length)
+    console.log('SeasonBound', this.props.currentYr)
     return (
       <div className="season_boundruns">
-        {(Object.keys(gData).length) ? this.renderGraph(): null}
+         {this.renderGraph()}
       </div>
     );
   }

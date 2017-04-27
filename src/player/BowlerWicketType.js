@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactHighcharts from 'react-highcharts';
 import axios from 'axios'; 
 
-const URLExt = 'player/playerwickettype/32'
+const URLExt = 'playerwickettype'
 
 class BowlerWicketType extends Component {
   constructor(props) {
@@ -15,13 +15,11 @@ class BowlerWicketType extends Component {
 
   componentWillMount() {
       this.loadGraphData(URLExt);
-      console.log('in')
   }
 
   loadGraphData(url) {
-      axios.get(`${this.props.urlExt}/${url}`)
+      axios.get(`${this.props.urlExt}/${url}/${this.props.pId}`)
         .then(res => {
-            console.log('bowlwe',res.data)
             this.setState({data: res.data})
         })
   }
@@ -45,7 +43,6 @@ class BowlerWicketType extends Component {
   renderGraph() {
     let graphData = this.state.data;
     let result = this.parseGraphData(graphData);
-    console.log('kannan',result[0])
     let config = {
         chart: {
         type: 'column'
@@ -87,7 +84,7 @@ class BowlerWicketType extends Component {
   }
 
   componentWillUnmount() {
-    this.refs.chart.destroy();
+    this.refs.chart.destroy;
   }
 
   render() {
@@ -95,7 +92,7 @@ class BowlerWicketType extends Component {
     console.log('bowler', gData, Object.keys(gData).length)
     return (
       <div className="bowler_wickettype">
-        {(Object.keys(gData).length) ? this.renderGraph(): null}
+        {this.renderGraph()}
       </div>
     );
   }

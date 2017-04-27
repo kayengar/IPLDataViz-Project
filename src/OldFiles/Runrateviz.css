@@ -42,7 +42,7 @@
     display: flex;
 }
 
-.season_boundruns,.season_wins
+.season_boundruns,.season_wins, .season_slogrates
 {
     position:relative;
     margin-right: 10%;

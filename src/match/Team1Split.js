@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactHighcharts from 'react-highcharts';
 import axios from 'axios';
 
-const URLExt = 'match/team1powerruns/335987'
+const URLExt = 'team1powerruns'
 
 class Team1Split extends Component {
   constructor(props) {
@@ -15,13 +15,11 @@ class Team1Split extends Component {
 
   componentWillMount() {
       this.loadGraphData(URLExt);
-      console.log('in')
   }
 
   loadGraphData(url) {
-      axios.get(`${this.props.urlExt}/${url}`)
+      axios.get(`${this.props.urlExt}/${url}/${this.props.mId}`)
         .then(res => {
-            console.log(res.data)
             this.setState({data: res.data})
         })
   }
@@ -48,7 +46,6 @@ class Team1Split extends Component {
   renderGraph() {
     let graphData = this.state.data;
     let result = this.parseGraphData(graphData);
-    console.log('Team names',result[3][0])
     let config = {
         chart: {
         plotBackgroundColor: null,
@@ -84,32 +81,24 @@ class Team1Split extends Component {
         name: 'Runs',
         innerSize: '50%',
         data: [
-            ['Powerplay',   result[0][0]],
-            ['Middle',       result[1][0]],
-            ['Slog', result[2][0]]
-        ]
-    }]
-
+            ['Powerplay', result[0][0]?result[0][0]:0],
+            ['Middle', result[1][0]?result[1][0]:0],
+            ['Slog', result[2][0]?result[2][0]:0]
+            ]
+        }]
     }
-    console.log(result)
-    if(result[0].length) {   
-        console.log('render') 
-        return(<ReactHighcharts config={config} ref='chart'></ReactHighcharts>)
-    } else {
-        return null
-    }
+    return(<ReactHighcharts config={config} ref='chart'></ReactHighcharts>)
   }
 
   componentWillUnmount() {
-    this.refs.chart.destroy();
+    (this.refs.chart)?this.refs.chart.destroy: null;
   }
 
   render() {
     let gData = this.state.data
-    console.log('In season', gData, Object.keys(gData).length)
     return (
       <div className="match_team1split">
-        {(Object.keys(gData).length) ? this.renderGraph(): null}
+        {this.renderGraph()}
       </div>
     );
   }
