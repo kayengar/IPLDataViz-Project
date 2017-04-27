@@ -5,7 +5,7 @@ import 'animate.css';
 import AppHeader from './AppHeader'
 import SeasonView from "./SeasonView"
 
-const url = '//localhost:5000/iplviz'
+const url = ':5000/iplviz'
 
 class App extends Component {
   render() {

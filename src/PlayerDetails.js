@@ -14,7 +14,7 @@ import SeasonRuns from './player/SeasonRuns'
 import PlayerBio from './player/PlayerBio'
 
 
-const apiURL = 'http://localhost:5000/iplviz/player'
+const apiURL = ':5000/iplviz/player'
 const playerdetails = 'playerdetails'
 
 class PlayerDetails extends Component {

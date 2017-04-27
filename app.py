@@ -297,7 +297,7 @@ def player_radar(id):
 ##########################End of player endpoints##############################
 
 ########################### Season endpoints starts here############################
-#####Author:KANNAN GANESAN
+##### : 
 
 
 
@@ -1272,10 +1272,10 @@ def match_team2powerwickets(id):
 ###########################################End of matchendpoints#############################################################################3
 
 #############################################Team endpoints starts here################################
-###################Author:Anjali##################
+################### : ##################
 
 ###################################### TEAM VISUALIZATION #############################################################
-###################### AUTHOR - ANJALI
+######################   -  
 @app.route("/iplviz/team/<id>/<yr>")   #initial load
 def team_getPlayersName(id,yr):
     #conn_string = "host='localhost' dbname='ipldata-dv' user='postgres' password='piyush'"
