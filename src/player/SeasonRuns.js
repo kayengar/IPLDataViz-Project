@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import ReactHighcharts from 'react-highcharts';
 import axios from 'axios'; 
 
-const URLExt = 'season/teamboundruns/2008'
+const URLExt = 'player/runsperseason/20'
 
-class SeasonBoundRuns extends Component {
+class SeasonRuns extends Component {
   constructor(props) {
       super(props);
       this.state = {
@@ -27,37 +27,43 @@ class SeasonBoundRuns extends Component {
   }
 
   parseGraphData(res) {
-      let totalruns = []
-      let boundruns = []
-      let names = []
-      let seasons = []
+      let years = []
+      let runs = []
+      //let names = []
       res.forEach(function(val){
-          totalruns.push(val['Total_Runs'])
-          boundruns.push(val['Bound_Runs'])
-          names.push(val['Team_Name'])
-          seasons.push(val['Season'])
+          //console.log('val',val['Season_Year'])
+          years.push(val['Season_Year'])
+          runs.push(val['Batsman_Scored'])
+          //names.push(val['Player_Name'])
       })
+      //console.log('Wicketsinitial',wickets)
       let tmpArr = []
-      tmpArr.push(totalruns)
-      tmpArr.push(boundruns)
-      tmpArr.push(names)
-      tmpArr.push(seasons)
+      tmpArr.push(years)
+      tmpArr.push(runs)
+      //tmpArr.push(names)
+      //console.log('Wicket temp',tmpArr[1])
       return tmpArr
   }
 
   renderGraph() {
     let graphData = this.state.data;
-    let result = this.parseGraphData(graphData);
-    console.log('kannan',result[0])
+    let result = this.parseGraphData(graphData)
+    //console.log('Name of the player',result[2][0])
+    //console.log('Year',result[0])
+    console.log('Runs season',result[1])
     let config = {
         chart: {
-        type: 'bar'
+        type: 'line'
     },
     title: {
-        text: 'Boundary Runs in Season-'+result[3][0]
+        text: 'Number of Runs-Seasonwise'
+    },
+    subtitle: {
+        text: 'Source: Kaggle.com'
     },
     xAxis: {
-        categories: result[2]
+        categories: result[0],
+        crosshair: true
     },
     yAxis: {
         min: 0,
@@ -65,21 +71,16 @@ class SeasonBoundRuns extends Component {
             text: 'Runs'
         }
     },
-    legend: {
-        reversed: true
-    },
     plotOptions: {
-        series: {
-            stacking: 'normal'
+        column: {
+            pointPadding: 0.2,
+            borderWidth: 0
         }
     },
     series: [{
-        name: 'Total Runs',
-        data: result[0]
-    }, {
-        name: 'Boundary Runs',
+        name: 'Runs',
         data: result[1]
-    }]
+    } ]
     }
     console.log(result)
     if(result[0].length) {   
@@ -98,11 +99,11 @@ class SeasonBoundRuns extends Component {
     let gData = this.state.data
     console.log('bowler', gData, Object.keys(gData).length)
     return (
-      <div className="season_boundruns">
+      <div className="batsman_seasonruns">
         {(Object.keys(gData).length) ? this.renderGraph(): null}
       </div>
     );
   }
 }
 
-export default SeasonBoundRuns;
+export default SeasonRuns;

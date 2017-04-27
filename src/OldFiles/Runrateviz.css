@@ -1,0 +1,85 @@
+.dropdown-style {
+    display: block;
+    position: relative;
+}
+
+.teamLogos {
+    width: 20%;
+    margin: 10px;
+    display: inline-block;
+}
+
+.teamLogos img {
+    width: auto;
+    max-width: 80%;
+    height: auto;
+}
+
+.container {
+    width: 100%;
+}
+
+.season_tables {
+    display: flex;
+}
+
+.points_table {
+    width: 30%;
+    margin: 2%;
+}
+
+.top3batsmen_table {
+    width: 30%;
+    margin: 2%;
+}
+
+.top3bowlers_table{
+    width: 30%;
+    margin: 2%;
+}
+
+.seasonGraphs {
+    display: flex;
+}
+
+.season_boundruns,.season_wins
+{
+    position:relative;
+    margin-right: 10%;
+    -webkit-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+       -moz-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+            box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+}
+.season_boundruns:before, .season_boundruns:after, .season_wins:before, .season_wins:after
+{
+    content:"";
+    position:absolute;
+    z-index:-1;
+    -webkit-box-shadow:0 0 20px rgba(0,0,0,0.8);
+    -moz-box-shadow:0 0 20px rgba(0,0,0,0.8);
+    box-shadow:0 0 20px rgba(0,0,0,0.8);
+    top:0;
+    bottom:0;
+    left:10px;
+    right:10px;
+    -moz-border-radius:100px / 10px;
+    border-radius:100px / 10px;
+}
+.season_boundruns:after, .season_wins:after
+{
+    right:10px;
+    left:auto;
+    -webkit-transform:skew(8deg) rotate(3deg);
+       -moz-transform:skew(8deg) rotate(3deg);
+        -ms-transform:skew(8deg) rotate(3deg);
+         -o-transform:skew(8deg) rotate(3deg);
+            transform:skew(8deg) rotate(3deg);
+}
+
+.player_details {
+    margin: 0 auto;
+}
+
+.player_details h3 {
+    text-decoration: underline
+}

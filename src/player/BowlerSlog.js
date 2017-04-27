@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import ReactHighcharts from 'react-highcharts';
 import axios from 'axios'; 
 
-const URLExt = 'player/playerwicket/32'
+const URLExt = 'player/bowlerslogovers/32'
 
-class BowlerWickets extends Component {
+class BowlerSlog extends Component {
   constructor(props) {
       super(props);
       this.state = {
@@ -27,60 +27,77 @@ class BowlerWickets extends Component {
   }
 
   parseGraphData(res) {
-      let years = []
+      
       let wickets = []
-      let names = []
+      let overs = []
       res.forEach(function(val){
-          console.log('val',val['Season_Year'])
-          years.push(val['Season_Year'])
           wickets.push(val['Wickets'])
-          names.push(val['Player_Name'])
+          overs.push(val['Over_Id'])
       })
-      console.log('Wicketsinitial',wickets)
       let tmpArr = []
-      tmpArr.push(years)
       tmpArr.push(wickets)
-      tmpArr.push(names)
-      console.log('Wicket temp',tmpArr[1])
+      tmpArr.push(overs)
       return tmpArr
   }
 
   renderGraph() {
     let graphData = this.state.data;
-    let result = this.parseGraphData(graphData)
-    console.log('Name of the player',result[2][0])
-    console.log('Year',result[0])
-    console.log('Wickets',result[1])
+    let result = this.parseGraphData(graphData);
+    //console.log('kannan',result[0][0])
     let config = {
-        chart: {
-        type: 'line'
+          chart: {
+        plotBackgroundColor: null,
+        plotBorderWidth: null,
+        plotShadow: false,
+        type: 'pie'
     },
     title: {
-        text: 'Number of Wickets-Seasonwise-'+result[2][0]
+        text: 'Slog over Wickets classification'
     },
-    subtitle: {
-        text: 'Source: Kaggle.com'
-    },
-    xAxis: {
-        categories: result[0],
-        crosshair: true
-    },
-    yAxis: {
-        min: 0,
-        title: {
-            text: 'Number of Wickets'
-        }
+    tooltip: {
+        pointFormat: '{series.name}: <b>{point.y}</b>'
     },
     plotOptions: {
-        column: {
-            pointPadding: 0.2,
-            borderWidth: 0
+        pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            dataLabels: {
+                enabled: true,
+                format: '<b>{point.name}</b>:{point.y}',
+                style: {
+                    color: 'black'
+                }
+            }
         }
     },
     series: [{
-        name: 'Wickets',
-        data: result[1]
-    } ]
+        name: 'Slog over Wickets',
+        colorByPoint: true,
+        data: [{
+            name:'Over 15',
+            y: result[0][0]
+        }, {
+            name:'Over 16',
+            y: result[0][1]
+        },
+        {
+            name:'Over 17',
+            y: result[0][2]
+        },
+        {
+            name:'Over 18',
+            y: result[0][3]
+        },
+        {
+            name:'Over 19',
+            y: result[0][4]
+        },
+        {
+            name:'Over 20',
+            y: result[0][5]
+        }
+        ]
+    }]
     }
     console.log(result)
     if(result[0].length) {   
@@ -99,11 +116,11 @@ class BowlerWickets extends Component {
     let gData = this.state.data
     console.log('bowler', gData, Object.keys(gData).length)
     return (
-      <div className="bowler_wickets">
+      <div className="bowler_slog">
         {(Object.keys(gData).length) ? this.renderGraph(): null}
       </div>
     );
   }
 }
 
-export default BowlerWickets;
+export default BowlerSlog;

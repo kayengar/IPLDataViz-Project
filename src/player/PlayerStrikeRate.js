@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactHighcharts from 'react-highcharts';
 import axios from 'axios'; 
 
-const URLExt = 'player/strikerate'
+const URLExt = 'player/strikerate/20'
 
 class PlayerStrikeRate extends Component {
   constructor(props) {

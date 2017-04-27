@@ -3,18 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "react": "^15.4.2",
-    "react-dom": "^15.4.2",
+    "animate.css": "^3.5.2",
     "axios": "^0.14.0",
-    "highcharts": "*",
     "d3": "*",
     "dc": "*",
+    "highcharts": "*",
     "moment": "^2.18.1",
     "mongoose": "^4.6.0",
     "nodemon": "^1.10.2",
     "normalize.css": "^6.0.0",
+    "react": "^15.4.2",
     "react-bootstrap": "^0.30.8",
-    "react-highcharts": "^11.5.0"
+    "react-dom": "^15.4.2",
+    "react-highcharts": "^11.5.0",
+    "react-router": "^3",
+    "history": "*"
   },
   "devDependencies": {
     "react-scripts": "0.9.5"

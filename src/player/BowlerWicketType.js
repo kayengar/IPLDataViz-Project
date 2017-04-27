@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactHighcharts from 'react-highcharts';
 import axios from 'axios'; 
 
-const URLExt = 'player/playerwickettype'
+const URLExt = 'player/playerwickettype/32'
 
 class BowlerWicketType extends Component {
   constructor(props) {

@@ -1,4 +1,4 @@
-.teamLogos {
-    width: 100px;
-    height: 120px;
+.teamLogos:hover {
+    -webkit-animation: pulse infinite 1s;
+    animation: pulse infinite 1s;
 }
